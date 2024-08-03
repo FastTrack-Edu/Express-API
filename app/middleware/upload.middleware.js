@@ -1,4 +1,5 @@
 const multer = require("multer");
+const fs = require("fs");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -10,6 +11,10 @@ const storage = multer.diskStorage({
       uploadPath += "thumbnail/";
     } else if (file.fieldname === "photo") {
       uploadPath += "photo/";
+    }
+
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
     }
 
     cb(null, uploadPath);
