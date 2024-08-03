@@ -16,7 +16,7 @@ Before running this application, ensure you have the following installed:
 
 ```bash
 git clone https://github.com/FastTrack-Edu/Express-API.git
-cd your-repo-name
+cd Express-API
 ```
 
 ### Install All the Depedencies
