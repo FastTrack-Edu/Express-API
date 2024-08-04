@@ -27,11 +27,9 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    const requiredFields = ["name", "email", "password", "confirm_password"];
-    const missingFields = requiredFields.filter((field) => !userData[field]);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+    const { error: validationError } = validateRequiredFields(userData, ["name", "email", "password", "confirm_password"]);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
     const existingUser = await User.findOne({ email: userData.email });

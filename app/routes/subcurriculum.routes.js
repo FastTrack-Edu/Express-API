@@ -3,6 +3,7 @@ const auth = require("../middleware/auth.middleware");
 const admin = require("../middleware/admin.middleware");
 const Subcurriculum = require("../models/subcurriculum.model");
 const Curriculum = require("../models/curriculum.models");
+const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
 
 const router = express.Router();
 
@@ -35,24 +36,22 @@ router.post("/create", auth, admin, async (req, res) => {
   const subcurriculumData = req.body;
 
   try {
-    const requiredFields = ["name", "curriculum"];
-    const missingFields = requiredFields.filter((field) => !subcurriculumData[field]);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+    const { error: validationError } = validateRequiredFields(subcurriculumData, ["name", "curriculum"]);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
     // Find Curriculum Exist or Not
-    const curriculumExists = await Curriculum.findById(subcurriculumData.curriculum);
-    if (!curriculumExists) {
-      return res.status(400).json({ error: "Curriculum doesnt exist" });
+    const { document: curriculumExist, error: curriculumError } = await findModelById("Curriculum", subcurriculumData.curriculum);
+    if (curriculumError) {
+      return res.status(400).json({ error: curriculumError });
     }
 
     const subcurriculum = new Subcurriculum(subcurriculumData);
     await subcurriculum.save();
 
-    curriculumExists.subcurriculums.push(subcurriculum._id);
-    await curriculumExists.save();
+    curriculumExist.subcurriculums.push(subcurriculum._id);
+    await curriculumExist.save();
 
     res.status(201).json(subcurriculum);
   } catch (err) {
@@ -65,17 +64,15 @@ router.patch("/update/:id", auth, admin, async (req, res) => {
   const subcurriculumData = req.body;
 
   try {
-    const requiredFields = ["name", "curriculum"];
-    const missingFields = requiredFields.filter((field) => !subcurriculumData[field]);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+    const { error: validationError } = validateRequiredFields(subcurriculumData, ["name", "curriculum"]);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
     // Find Curriculum Exist or Not
-    const curriculumExists = await Curriculum.findById(subcurriculumData.curriculum);
-    if (!curriculumExists) {
-      return res.status(400).json({ error: "Video lesson doesnt exist" });
+    const { document: curriculumExist, error: curriculumError } = await findModelById("Curriculum", subcurriculumData.curriculum);
+    if (curriculumError) {
+      return res.status(400).json({ error: curriculumError });
     }
 
     const updatedCurriculum = await Subcurriculum.findByIdAndUpdate(subcurriculumId, subcurriculumData, { new: true });
@@ -85,12 +82,12 @@ router.patch("/update/:id", auth, admin, async (req, res) => {
     }
 
     if (updatedCurriculum.curriculum != subcurriculumData.curriculum) {
-      const oldVideoLesson = await Curriculum.findById(curriculumExists.curriculum);
+      const oldVideoLesson = await Curriculum.findById(curriculumExist.curriculum);
       const newVideoLesson = await Curriculum.findById(subcurriculumData.curriculum);
 
       if (oldVideoLesson && newVideoLesson) {
-        oldVideoLesson.subcurriculums.pull(curriculumExists._id);
-        newVideoLesson.subcurriculums.push(curriculumExists._id);
+        oldVideoLesson.subcurriculums.pull(curriculumExist._id);
+        newVideoLesson.subcurriculums.push(curriculumExist._id);
         await oldVideoLesson.save();
         await newVideoLesson.save();
       }

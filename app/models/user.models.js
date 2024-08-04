@@ -28,6 +28,12 @@ const userSchema = new Schema({
     minLength: 8,
     required: true,
   },
+  enrolled_courses: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "VideoLesson",
+    },
+  ],
 });
 
 userSchema.pre("save", async function (next) {
