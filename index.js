@@ -10,6 +10,8 @@ const mentorRoutes = require("./app/routes/mentor.routes");
 const videoLessonRoutes = require("./app/routes/videoLesson.routes");
 const curriculumRoutes = require("./app/routes/curriculum.routes");
 const subcurriculumRoutes = require("./app/routes/subcurriculum.routes");
+const reviewRoutes = require("./app/routes/review.routes");
+const paymentRoutes = require("./app/routes/payment.routes");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,6 +37,12 @@ app.use("/api/curriculum", curriculumRoutes);
 
 // Subcurriculum Routes
 app.use("/api/subcurriculum", subcurriculumRoutes);
+
+// Review Routes
+app.use("/api/review", reviewRoutes);
+
+// Payment Routes
+app.use("/api", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

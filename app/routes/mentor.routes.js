@@ -5,6 +5,7 @@ const admin = require("../middleware/admin.middleware");
 const upload = require("../middleware/upload.middleware");
 const fs = require("fs");
 const path = require("path");
+const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
 
 const router = express.Router();
 
@@ -37,11 +38,9 @@ router.post("/create", auth, admin, upload.single("photo"), async (req, res) => 
   const mentorData = req.body;
 
   try {
-    const requiredFields = ["name", "experience_duration", "about", "linkedin"];
-    const missingFields = requiredFields.filter((field) => !mentorData[field]);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+    const { error: validationError } = validateRequiredFields(mentorData, ["name", "experience_duration", "about", "linkedin"]);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
     if (req.file) {
@@ -49,7 +48,6 @@ router.post("/create", auth, admin, upload.single("photo"), async (req, res) => 
     }
 
     const mentor = new Mentor(mentorData);
-
     await mentor.save();
 
     res.status(201).json(mentor);
@@ -63,22 +61,19 @@ router.patch("/update/:id", auth, admin, upload.single("photo"), async (req, res
   const mentorData = req.body;
 
   try {
-    const requiredFields = ["name", "experience_duration", "about", "linkedin"];
-    const missingFields = requiredFields.filter((field) => !mentorData[field]);
-
-    if (missingFields.length > 0) {
-      return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+    const { error: validationError } = validateRequiredFields(mentorData, ["name", "experience_duration", "about", "linkedin"]);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
     }
 
-    const mentorExists = await Mentor.findById(mentorId);
-
-    if (!mentorExists) {
-      return res.status(404).json({ error: "Mentor doesnt exist" });
+    const { document: mentorExist, error: mentorError } = await findModelById("Mentor", mentorId);
+    if (mentorError) {
+      return res.status(404).json({ error: mentorError });
     }
 
     if (req.file) {
-      if (mentorExists.photo) {
-        await fs.promises.unlink(path.join("public", mentorExists.photo), (err) => {
+      if (mentorExist.photo) {
+        await fs.promises.unlink(path.join("public", mentorExist.photo), (err) => {
           res.status(500).send(err.message);
         });
       }

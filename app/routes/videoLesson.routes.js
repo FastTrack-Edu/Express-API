@@ -6,6 +6,8 @@ const admin = require("../middleware/admin.middleware");
 const upload = require("../middleware/upload.middleware");
 const fs = require("fs");
 const path = require("path");
+const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
+const { calculateDiscountPrice } = require("../utils/calculate.utils");
 
 const router = express.Router();
 
@@ -19,7 +21,8 @@ router.get("/", async (req, res) => {
           path: "subcurriculums",
         },
       })
-      .populate("enrolled_members");
+      .populate("enrolled_members")
+      .populate("reviews");
     res.status(201).json(videoLessons);
   } catch (err) {
     res.status(500).send(err.message);
@@ -38,7 +41,8 @@ router.get("/:id", async (req, res) => {
           path: "subcurriculums",
         },
       })
-      .populate("enrolled_members");
+      .populate("enrolled_members")
+      .populate("reviews");
 
     if (!videoLesson) {
       return res.status(404).json({ error: "Video Lesson not found" });
@@ -62,24 +66,21 @@ router.post(
     const videoLessonData = req.body;
 
     try {
-      const requiredFields = ["name", "description", "level", "price", "mentor"];
-      const missingFields = requiredFields.filter((field) => !videoLessonData[field]);
-
-      if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["name", "description", "level", "price", "mentor"]);
+      if (validationError) {
+        return res.status(400).json({ error: validationError });
       }
 
       // Find Mentor Exist or Not
-      const mentorExists = await Mentor.findById(videoLessonData.mentor);
-      if (!mentorExists) {
-        return res.status(400).json({ error: "Mentor doesnt exist" });
+      const { document: mentorExist, error: mentorError } = await findModelById("Mentor", videoLessonData.mentor);
+      if (mentorError) {
+        return res.status(400).json({ error: mentorError });
       }
 
       // Calculate Discount Price
       if (videoLessonData.discount != 0) {
         const { price, discount } = videoLessonData;
-        const discountPrice = price * (1 - discount / 100);
-        videoLessonData.discount_price = discountPrice;
+        videoLessonData.discount_price = calculateDiscountPrice(price, discount);
       }
 
       // Handle Upload
@@ -95,8 +96,8 @@ router.post(
       const videoLesson = new VideoLesson(videoLessonData);
       await videoLesson.save();
 
-      mentorExists.video_lessons.push(videoLesson._id);
-      await mentorExists.save();
+      mentorExist.video_lessons.push(videoLesson._id);
+      await mentorExist.save();
 
       res.status(201).json(videoLesson);
     } catch (err) {
@@ -118,45 +119,42 @@ router.patch(
     const videoLessonData = req.body;
 
     try {
-      const requiredFields = ["name", "description", "level", "price", "mentor"];
-      const missingFields = requiredFields.filter((field) => !videoLessonData[field]);
-
-      if (missingFields.length > 0) {
-        return res.status(400).json({ error: `Missing required fields: ${missingFields.join(", ")}` });
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["name", "description", "level", "price", "mentor"]);
+      if (validationError) {
+        return res.status(400).json({ error: validationError });
       }
 
       // Find Mentor Exist or Not
-      const mentorExists = await Mentor.findById(videoLessonData.mentor);
-      if (!mentorExists) {
-        return res.status(400).json({ error: "Mentor doesnt exist" });
+      const { document: mentorExist, error: mentorError } = await findModelById("Mentor", videoLessonData.mentor);
+      if (mentorError) {
+        return res.status(400).json({ error: mentorError });
       }
 
       // Calculate Discount Price
       if (videoLessonData.discount != 0) {
         const { price, discount } = videoLessonData;
-        const discountPrice = price * (1 - discount / 100);
-        videoLessonData.discount_price = discountPrice;
+        videoLessonData.discount_price = calculateDiscountPrice(price, discount);
       }
 
       // Find Video Lesson Exist or Not
-      const videoLessonExists = await VideoLesson.findById(videoLessonId);
-      if (!videoLessonExists) {
-        return res.status(404).json({ error: "Video lesson not found" });
+      const { document: videoLessonExist, error: videoLessonError } = await findModelById("VideoLesson", videoLessonId);
+      if (videoLessonError) {
+        return res.status(400).json({ error: videoLessonError });
       }
 
       // Handle Upload
       if (req.files) {
         if (req.files["thumbnail"]) {
-          if (videoLessonExists.thumbnail) {
-            await fs.promises.unlink(path.join("public", videoLessonExists.thumbnail), (err) => {
+          if (videoLessonExist.thumbnail) {
+            await fs.promises.unlink(path.join("public", videoLessonExist.thumbnail), (err) => {
               res.status(500).send(err.message);
             });
           }
           videoLessonData.thumbnail = "/uploads/thumbnail/" + req.files["thumbnail"][0].filename;
         }
         if (req.files["video"]) {
-          if (videoLessonExists.video) {
-            await fs.promises.unlink(path.join("public", videoLessonExists.video), (err) => {
+          if (videoLessonExist.video) {
+            await fs.promises.unlink(path.join("public", videoLessonExist.video), (err) => {
               res.status(500).send(err.message);
             });
           }
@@ -166,13 +164,13 @@ router.patch(
 
       const updatedVideoLesson = await VideoLesson.findByIdAndUpdate(videoLessonId, videoLessonData, { new: true });
 
-      if (videoLessonExists.mentor != videoLessonData.mentor) {
-        const oldMentor = await Mentor.findById(videoLessonExists.mentor);
+      if (videoLessonExist.mentor != videoLessonData.mentor) {
+        const oldMentor = await Mentor.findById(videoLessonExist.mentor);
         const newMentor = await Mentor.findById(videoLessonData.mentor);
 
         if (oldMentor && newMentor) {
-          oldMentor.video_lessons.pull(videoLessonExists._id);
-          newMentor.video_lessons.push(videoLessonExists._id);
+          oldMentor.video_lessons.pull(videoLessonExist._id);
+          newMentor.video_lessons.push(videoLessonExist._id);
           await oldMentor.save();
           await newMentor.save();
         }

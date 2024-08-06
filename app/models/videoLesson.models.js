@@ -57,7 +57,12 @@ const videoLessonSchema = new Schema({
       ref: "User",
     },
   ],
-  reviews: [],
+  reviews: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
 });
 
 const VideoLesson = model("VideoLesson", videoLessonSchema);
