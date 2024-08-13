@@ -6,6 +6,7 @@ const connectDB = require("./app/database/init");
 require("dotenv").config();
 
 const authRoutes = require("./app/routes/auth.routes");
+const profileRoutes = require("./app/routes/profile.routes");
 const mentorRoutes = require("./app/routes/mentor.routes");
 const videoLessonRoutes = require("./app/routes/videoLesson.routes");
 const curriculumRoutes = require("./app/routes/curriculum.routes");
@@ -26,6 +27,9 @@ connectDB();
 // Auth Routes
 app.use("/api", authRoutes);
 
+// Profile Routes
+app.use("/api/profile", profileRoutes);
+
 // Mentor Routes
 app.use("/api/mentor", mentorRoutes);
 
@@ -42,7 +46,7 @@ app.use("/api/subcurriculum", subcurriculumRoutes);
 app.use("/api/review", reviewRoutes);
 
 // Payment Routes
-app.use("/api", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
