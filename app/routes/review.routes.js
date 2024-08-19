@@ -1,6 +1,7 @@
 const express = require("express");
 const auth = require("../middleware/auth.middleware");
 const Review = require("../models/review.models");
+const VideoLesson = require("../models/videoLesson.models");
 const { calculateAverageRating } = require("../utils/calculate.utils");
 const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
 
@@ -37,9 +38,14 @@ router.post("/create", auth, async (req, res) => {
     const review = new Review(reviewData);
     await review.save();
 
-    videoLessonExist.reviews.push(review._id);
-    videoLessonExist.rating = await calculateAverageRating(videoLessonExist._id);
-    await videoLessonExist.save();
+    await VideoLesson.findByIdAndUpdate(
+      review.video_lesson,
+      {
+        $push: { reviews: review._id },
+        $set: { rating: await calculateAverageRating(review.video_lesson) },
+      },
+      { new: true }
+    );
 
     res.status(201).json(review);
   } catch (err) {
@@ -57,11 +63,15 @@ router.patch("/update/:id", auth, async (req, res) => {
       return res.status(400).json({ error: validationError });
     }
 
+    const { document: reviewExist, error: reviewError } = await findModelById("Review", reviewId);
+    if (reviewError) {
+      return res.status(400).json({ error: reviewError });
+    }
+
     const updatedReview = await Review.findByIdAndUpdate(reviewId, reviewData, { new: true });
 
-    if (!updatedReview) {
-      return res.status(404).json({ error: "Review not found" });
-    }
+    const newRating = await calculateAverageRating(updatedReview.video_lesson);
+    await VideoLesson.findByIdAndUpdate(updatedReview.video_lesson, { rating: newRating });
 
     res.status(200).json(updatedReview);
   } catch (err) {
@@ -78,6 +88,9 @@ router.delete("/destroy/:id", auth, async (req, res) => {
     if (!deletedReview) {
       return res.status(404).json({ error: "Delete failed review not found" });
     }
+
+    const newRating = await calculateAverageRating(deletedReview.video_lesson);
+    await VideoLesson.findByIdAndUpdate(deletedReview.video_lesson, { rating: newRating });
 
     res.status(200).json({ message: "Data deleted!" });
   } catch (err) {

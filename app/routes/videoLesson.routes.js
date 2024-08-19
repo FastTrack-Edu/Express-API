@@ -66,7 +66,7 @@ router.post(
     const videoLessonData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(videoLessonData, ["name", "description", "level", "price", "mentor"]);
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "mentor"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
@@ -96,8 +96,9 @@ router.post(
       const videoLesson = new VideoLesson(videoLessonData);
       await videoLesson.save();
 
-      mentorExist.video_lessons.push(videoLesson._id);
-      await mentorExist.save();
+      await Mentor.findByIdAndUpdate(videoLesson.mentor, {
+        $push: { video_lessons: videoLesson._id },
+      });
 
       res.status(201).json(videoLesson);
     } catch (err) {
@@ -119,7 +120,7 @@ router.patch(
     const videoLessonData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(videoLessonData, ["name", "description", "level", "price", "mentor"]);
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "mentor"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
@@ -165,15 +166,12 @@ router.patch(
       const updatedVideoLesson = await VideoLesson.findByIdAndUpdate(videoLessonId, videoLessonData, { new: true });
 
       if (videoLessonExist.mentor != videoLessonData.mentor) {
-        const oldMentor = await Mentor.findById(videoLessonExist.mentor);
-        const newMentor = await Mentor.findById(videoLessonData.mentor);
-
-        if (oldMentor && newMentor) {
-          oldMentor.video_lessons.pull(videoLessonExist._id);
-          newMentor.video_lessons.push(videoLessonExist._id);
-          await oldMentor.save();
-          await newMentor.save();
-        }
+        await Mentor.findByIdAndUpdate(videoLessonExist.mentor, {
+          $pull: { video_lessons: videoLessonExist._id },
+        });
+        await Mentor.findByIdAndUpdate(videoLessonData.mentor, {
+          $push: { video_lessons: updatedVideoLesson._id },
+        });
       }
 
       res.status(200).json(updatedVideoLesson);

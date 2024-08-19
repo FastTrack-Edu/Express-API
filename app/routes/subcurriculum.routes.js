@@ -50,8 +50,9 @@ router.post("/create", auth, admin, async (req, res) => {
     const subcurriculum = new Subcurriculum(subcurriculumData);
     await subcurriculum.save();
 
-    curriculumExist.subcurriculums.push(subcurriculum._id);
-    await curriculumExist.save();
+    await Curriculum.findByIdAndUpdate(subcurriculum.curriculum, {
+      $push: { subcurriculums: subcurriculum._id },
+    });
 
     res.status(201).json(subcurriculum);
   } catch (err) {
@@ -75,25 +76,23 @@ router.patch("/update/:id", auth, admin, async (req, res) => {
       return res.status(400).json({ error: curriculumError });
     }
 
-    const updatedCurriculum = await Subcurriculum.findByIdAndUpdate(subcurriculumId, subcurriculumData, { new: true });
-
-    if (!updatedCurriculum) {
-      return res.status(404).json({ error: "Video lesson not found" });
+    const { document: subcurriculumExist, error: subcurriculumError } = await findModelById("Subcurriculum", subcurriculumId);
+    if (subcurriculumError) {
+      return res.status(400).json({ error: curriculumError });
     }
 
-    if (updatedCurriculum.curriculum != subcurriculumData.curriculum) {
-      const oldVideoLesson = await Curriculum.findById(curriculumExist.curriculum);
-      const newVideoLesson = await Curriculum.findById(subcurriculumData.curriculum);
+    const updatedSubcurriculum = await Subcurriculum.findByIdAndUpdate(subcurriculumId, subcurriculumData, { new: true });
 
-      if (oldVideoLesson && newVideoLesson) {
-        oldVideoLesson.subcurriculums.pull(curriculumExist._id);
-        newVideoLesson.subcurriculums.push(curriculumExist._id);
-        await oldVideoLesson.save();
-        await newVideoLesson.save();
-      }
+    if (subcurriculumExist.curriculum != subcurriculumData.curriculum) {
+      await Curriculum.findByIdAndUpdate(subcurriculumExist.curriculum, {
+        $pull: { subcurriculums: subcurriculumExist._id },
+      });
+      await Curriculum.findByIdAndUpdate(subcurriculumData.curriculum, {
+        $push: { subcurriculums: updatedSubcurriculum._id },
+      });
     }
 
-    res.status(200).json(updatedCurriculum);
+    res.status(200).json(updatedSubcurriculum);
   } catch (err) {
     res.status(500).send(err.message);
   }
