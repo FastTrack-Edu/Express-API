@@ -50,8 +50,9 @@ router.post("/create", auth, admin, async (req, res) => {
     const curriculum = new Curriculum(curriculumData);
     await curriculum.save();
 
-    videoLessonExist.curriculums.push(curriculum._id);
-    await videoLessonExist.save();
+    await VideoLesson.findByIdAndUpdate(curriculum.video_lesson, {
+      $push: { curriculums: curriculum._id },
+    });
 
     res.status(201).json(curriculum);
   } catch (err) {
@@ -75,22 +76,20 @@ router.patch("/update/:id", auth, admin, async (req, res) => {
       return res.status(400).json({ error: videoLessonError });
     }
 
-    const updatedCurriculum = await Curriculum.findByIdAndUpdate(curriculumId, curriculumData, { new: true });
-
-    if (!updatedCurriculum) {
-      return res.status(404).json({ error: "Curriculum not found" });
+    const { document: curriculumExist, error: curriculumError } = await findModelById("Curriculum", curriculumId);
+    if (curriculumError) {
+      return res.status(400).json({ error: curriculumError });
     }
 
-    if (updatedCurriculum.video_lesson != curriculumData.video_lesson) {
-      const oldVideoLesson = await VideoLesson.findById(videoLessonExist.video_lesson);
-      const newVideoLesson = await VideoLesson.findById(curriculumData.video_lesson);
+    const updatedCurriculum = await Curriculum.findByIdAndUpdate(curriculumId, curriculumData, { new: true });
 
-      if (oldVideoLesson && newVideoLesson) {
-        oldVideoLesson.curriculums.pull(videoLessonExist._id);
-        newVideoLesson.curriculums.push(videoLessonExist._id);
-        await oldVideoLesson.save();
-        await newVideoLesson.save();
-      }
+    if (curriculumExist.video_lesson != curriculumData.video_lesson) {
+      await VideoLesson.findByIdAndUpdate(curriculumExist.video_lesson, {
+        $pull: { curriculums: curriculumExist._id },
+      });
+      await VideoLesson.findByIdAndUpdate(curriculumData.video_lesson, {
+        $push: { curriculums: updatedCurriculum._id },
+      });
     }
 
     res.status(200).json(updatedCurriculum);

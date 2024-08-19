@@ -8,6 +8,15 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  instance: {
+    type: String,
+    default: null,
+  },
+  phone_number: {
+    type: String,
+    default: null,
+    min: 10,
+  },
   email: {
     type: String,
     unique: true,

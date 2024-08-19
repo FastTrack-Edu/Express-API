@@ -6,11 +6,15 @@ const connectDB = require("./app/database/init");
 require("dotenv").config();
 
 const authRoutes = require("./app/routes/auth.routes");
+const profileRoutes = require("./app/routes/profile.routes");
 const mentorRoutes = require("./app/routes/mentor.routes");
 const videoLessonRoutes = require("./app/routes/videoLesson.routes");
 const curriculumRoutes = require("./app/routes/curriculum.routes");
 const subcurriculumRoutes = require("./app/routes/subcurriculum.routes");
 const reviewRoutes = require("./app/routes/review.routes");
+const eventRoutes = require("./app/routes/event.routes");
+const termConditionRoutes = require("./app/routes/termCondition.routes");
+const timelineRoutes = require("./app/routes/timeline.routes");
 const paymentRoutes = require("./app/routes/payment.routes");
 
 const app = express();
@@ -26,6 +30,9 @@ connectDB();
 // Auth Routes
 app.use("/api", authRoutes);
 
+// Profile Routes
+app.use("/api/profile", profileRoutes);
+
 // Mentor Routes
 app.use("/api/mentor", mentorRoutes);
 
@@ -33,16 +40,25 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/video-lesson", videoLessonRoutes);
 
 // Curriculum Routes
-app.use("/api/curriculum", curriculumRoutes);
+app.use("/api/video-lesson/curriculum", curriculumRoutes);
 
 // Subcurriculum Routes
-app.use("/api/subcurriculum", subcurriculumRoutes);
+app.use("/api/video-lesson/subcurriculum", subcurriculumRoutes);
 
 // Review Routes
 app.use("/api/review", reviewRoutes);
 
+// Event Routes
+app.use("/api/event", eventRoutes);
+
+// Term Condition Routes
+app.use("/api/event/term-condition", termConditionRoutes);
+
+// Timeline Routes
+app.use("/api/event/timeline", timelineRoutes);
+
 // Payment Routes
-app.use("/api", paymentRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

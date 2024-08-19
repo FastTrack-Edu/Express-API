@@ -4,7 +4,7 @@ const snap = require("../config/midtrans.config");
 
 const router = express.Router();
 
-router.post("/payment", auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const { order_id, gross_amount, item_name, item_price, customer_name, customer_email } = req.body;
 
   const parameter = {
@@ -38,3 +38,5 @@ router.post("/payment", auth, async (req, res) => {
     });
   }
 });
+
+module.exports = router;
