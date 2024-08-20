@@ -18,6 +18,12 @@ const reviewSchema = new Schema({
   video_lesson: {
     type: Schema.Types.ObjectId,
     ref: "VideoLesson",
+    default: null,
+  },
+  course: {
+    type: Schema.Types.ObjectId,
+    ref: "Course",
+    default: null,
   },
 });
 
