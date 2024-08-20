@@ -40,6 +40,10 @@ const videoLessonSchema = new Schema({
     type: Number,
     default: 0,
   },
+  category: {
+    type: String,
+    enum: ["riset", "sains", "puspernas"],
+  },
   mentor: {
     type: Schema.Types.ObjectId,
     ref: "Mentor",
@@ -64,6 +68,20 @@ const videoLessonSchema = new Schema({
     },
   ],
 });
+
+videoLessonSchema.query.filter = function (title, level, category) {
+  let query = this;
+  if (title) {
+    query = query.where({ title: new RegExp(title, "i") });
+  }
+  if (level) {
+    query = query.where({ level });
+  }
+  if (level) {
+    query = query.where({ category });
+  }
+  return query;
+};
 
 const VideoLesson = model("VideoLesson", videoLessonSchema);
 

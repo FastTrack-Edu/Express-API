@@ -12,8 +12,11 @@ const { calculateDiscountPrice } = require("../utils/calculate.utils");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+  const { title, level, category } = req.query;
+
   try {
     const videoLessons = await VideoLesson.find()
+      .filter(title, level, category)
       .populate("mentor")
       .populate({
         path: "curriculums",
@@ -66,7 +69,7 @@ router.post(
     const videoLessonData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "mentor"]);
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "category", "mentor"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
@@ -120,7 +123,7 @@ router.patch(
     const videoLessonData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "mentor"]);
+      const { error: validationError } = validateRequiredFields(videoLessonData, ["title", "description", "level", "price", "category", "mentor"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }

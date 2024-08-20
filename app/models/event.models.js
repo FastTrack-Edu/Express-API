@@ -15,10 +15,6 @@ const eventSchema = new Schema({
     type: String,
     required: true,
   },
-  theme: {
-    type: String,
-    required: true,
-  },
   audience: {
     type: String,
     required: true,
@@ -39,6 +35,10 @@ const eventSchema = new Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    enum: ["lkti", "bmc", "inovasi", "disertasi"],
+  },
   term_conditions: [
     {
       type: Schema.Types.ObjectId,
@@ -52,6 +52,17 @@ const eventSchema = new Schema({
     },
   ],
 });
+
+eventSchema.query.filter = function (name, category) {
+  let query = this;
+  if (name) {
+    query = query.where({ name: new RegExp(name, "i") });
+  }
+  if (category) {
+    query = query.where({ category });
+  }
+  return query;
+};
 
 const Event = model("Event", eventSchema);
 
