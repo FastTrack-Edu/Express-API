@@ -11,10 +11,17 @@ const courseSchema = new Schema({
     type: String,
     required: true,
   },
-  level: {
+  price: {
+    type: Number,
+    required: true,
+  },
+  thumbnail: {
     type: String,
-    enum: ["beginner", "intermediate", "expert"],
-    default: "beginner",
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["reguler", "exclusive"],
   },
   rating: {
     type: Number,
@@ -25,6 +32,18 @@ const courseSchema = new Schema({
     ref: "Mentor",
     required: true,
   },
+  benefits: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Benefit",
+    },
+  ],
+  enrolled_members: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   reviews: [
     {
       type: Schema.Types.ObjectId,
@@ -32,6 +51,14 @@ const courseSchema = new Schema({
     },
   ],
 });
+
+courseSchema.query.filter = function (title) {
+  let query = this;
+  if (title) {
+    query = query.where({ title: new RegExp(title, "i") });
+  }
+  return query;
+};
 
 const Course = model("Course", courseSchema);
 

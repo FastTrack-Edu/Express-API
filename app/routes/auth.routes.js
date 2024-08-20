@@ -13,7 +13,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: "5h" });
     res.json({ user: user, token: token });
   } catch (err) {
     res.status(500).json({ error: "Login failed", details: err.message });
@@ -41,7 +41,7 @@ router.post("/register", async (req, res) => {
     const user = new User(userData);
     await user.save();
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: "5h" });
     res.status(201).json({ user: user, token: token });
   } catch (err) {
     res.status(500).json({ error: "Registration failed", details: err.message });

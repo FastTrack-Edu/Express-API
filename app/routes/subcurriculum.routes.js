@@ -1,7 +1,7 @@
 const express = require("express");
 const auth = require("../middleware/auth.middleware");
 const admin = require("../middleware/admin.middleware");
-const Subcurriculum = require("../models/subcurriculum.model");
+const Subcurriculum = require("../models/subcurriculum.models");
 const Curriculum = require("../models/curriculum.models");
 const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
 
@@ -9,8 +9,8 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const curriculums = await Subcurriculum.find().populate("curriculum");
-    res.status(201).json(curriculums);
+    const subcurriculums = await Subcurriculum.find().populate("curriculum");
+    res.status(201).json(subcurriculums);
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -102,9 +102,9 @@ router.delete("/destroy/:id", auth, admin, async (req, res) => {
   const subcurriculumId = req.params.id;
 
   try {
-    const deletedCurriculum = await Subcurriculum.findByIdAndDelete(subcurriculumId);
+    const deletedSubcurriculum = await Subcurriculum.findByIdAndDelete(subcurriculumId);
 
-    if (!deletedCurriculum) {
+    if (!deletedSubcurriculum) {
       return res.status(404).json({ error: "Delete failed subcurriculum not found" });
     }
 

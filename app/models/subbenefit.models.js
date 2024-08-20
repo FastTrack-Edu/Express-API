@@ -2,18 +2,18 @@ const mongoose = require("mongoose");
 
 const { Schema, model } = mongoose;
 
-const subcurriculumSchema = new Schema({
+const subbenefitSchema = new Schema({
   name: {
     type: String,
     required: true,
   },
-  curriculum: {
+  benefit: {
     type: Schema.Types.ObjectId,
-    ref: "VideoLesson",
+    ref: "Benefit",
     required: true,
   },
 });
 
-const Subcurriculum = model("Subcurriculum", subcurriculumSchema);
+const Subbenefit = model("Subbenefit", subbenefitSchema);
 
-module.exports = Subcurriculum;
+module.exports = Subbenefit;

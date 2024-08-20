@@ -37,10 +37,16 @@ const userSchema = new Schema({
     minLength: 8,
     required: true,
   },
-  enrolled_courses: [
+  enrolled_video_lessons: [
     {
       type: Schema.Types.ObjectId,
       ref: "VideoLesson",
+    },
+  ],
+  enrolled_courses: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
     },
   ],
 });
