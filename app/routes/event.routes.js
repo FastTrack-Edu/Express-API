@@ -10,8 +10,10 @@ const { validateRequiredFields, findModelById } = require("../utils/validation.u
 const router = express.Router();
 
 router.get("/", async (req, res) => {
+  const { name, category } = req.query;
+
   try {
-    const events = await Event.find().populate("term_conditions").populate("timelines");
+    const events = await Event.find().filter(name, category).populate("term_conditions").populate("timelines");
     res.status(201).json(events);
   } catch (err) {
     res.status(500).send(err.message);
@@ -46,7 +48,7 @@ router.post(
     const eventData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "theme", "audience", "event_date", "description"]);
+      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "category", "audience", "event_date", "description"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
@@ -84,7 +86,7 @@ router.patch(
     const eventData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "theme", "audience", "event_date", "description"]);
+      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "category", "audience", "event_date", "description"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
