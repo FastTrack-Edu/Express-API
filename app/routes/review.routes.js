@@ -4,6 +4,8 @@ const Review = require("../models/review.models");
 const VideoLesson = require("../models/videoLesson.models");
 const { calculateAverageRating } = require("../utils/calculate.utils");
 const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
+const Course = require("../models/course.models");
+const Mentoring = require("../models/mentoring.models");
 
 const router = express.Router();
 
@@ -20,7 +22,7 @@ router.post("/create", auth, async (req, res) => {
   const reviewData = req.body;
 
   try {
-    const { error: validationError } = validateRequiredFields(reviewData, ["review", "rating", "user", "video_lesson"]);
+    const { error: validationError } = validateRequiredFields(reviewData, ["review", "rating", "user"]);
     if (validationError) {
       return res.status(400).json({ error: validationError });
     }
@@ -38,14 +40,36 @@ router.post("/create", auth, async (req, res) => {
     const review = new Review(reviewData);
     await review.save();
 
-    await VideoLesson.findByIdAndUpdate(
-      review.video_lesson,
-      {
-        $push: { reviews: review._id },
-        $set: { rating: await calculateAverageRating(review.video_lesson) },
-      },
-      { new: true }
-    );
+    if (reviewData.video_lesson) {
+      await VideoLesson.findByIdAndUpdate(
+        review.video_lesson,
+        {
+          $push: { reviews: review._id },
+          $set: { rating: await calculateAverageRating(review.video_lesson, "video_lesson") },
+        },
+        { new: true }
+      );
+    }
+    if (reviewData.course) {
+      await Course.findByIdAndUpdate(
+        review.course,
+        {
+          $push: { reviews: review._id },
+          $set: { rating: await calculateAverageRating(review.course, "course") },
+        },
+        { new: true }
+      );
+    }
+    if (reviewData.mentoring) {
+      await Mentoring.findByIdAndUpdate(
+        review.mentoring,
+        {
+          $push: { reviews: review._id },
+          $set: { rating: await calculateAverageRating(review.mentoring, "mentoring") },
+        },
+        { new: true }
+      );
+    }
 
     res.status(201).json(review);
   } catch (err) {
@@ -70,8 +94,18 @@ router.patch("/update/:id", auth, async (req, res) => {
 
     const updatedReview = await Review.findByIdAndUpdate(reviewId, reviewData, { new: true });
 
-    const newRating = await calculateAverageRating(updatedReview.video_lesson);
-    await VideoLesson.findByIdAndUpdate(updatedReview.video_lesson, { rating: newRating });
+    if (updatedReview.video_lesson) {
+      const newVideoLessonRating = await calculateAverageRating(updatedReview.video_lesson, "video_lesson");
+      await VideoLesson.findByIdAndUpdate(updatedReview.video_lesson, { rating: newVideoLessonRating });
+    }
+    if (updatedReview.course) {
+      const newCourseRating = await calculateAverageRating(updatedReview.course, "course");
+      await Course.findByIdAndUpdate(updatedReview.course, { rating: newCourseRating });
+    }
+    if (updatedReview.mentoring) {
+      const newMentoringRating = await calculateAverageRating(updatedReview.mentoring, "mentoring");
+      await Mentoring.findByIdAndUpdate(updatedReview.mentoring, { rating: newMentoringRating });
+    }
 
     res.status(200).json(updatedReview);
   } catch (err) {

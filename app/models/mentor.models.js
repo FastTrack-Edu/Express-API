@@ -35,6 +35,12 @@ const mentorSchema = new Schema({
       ref: "VideoLesson",
     },
   ],
+  mentorings: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Mentoring",
+    },
+  ],
 });
 
 const Mentor = model("Mentor", mentorSchema);

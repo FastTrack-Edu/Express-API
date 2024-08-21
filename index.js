@@ -14,6 +14,10 @@ const subcurriculumRoutes = require("./app/routes/subcurriculum.routes");
 const courseRoutes = require("./app/routes/course.routes");
 const benefitRoutes = require("./app/routes/benefit.routes");
 const subbenefitRoutes = require("./app/routes/subbenefit.routes");
+const courseLiveRoutes = require("./app/routes/courseLive.routes");
+const courseVideoRoutes = require("./app/routes/courseVideo.routes");
+const mentoringRoutes = require("./app/routes/mentoring.routes");
+const facilityRoutes = require("./app/routes/facility.routes");
 const reviewRoutes = require("./app/routes/review.routes");
 const eventRoutes = require("./app/routes/event.routes");
 const termConditionRoutes = require("./app/routes/termCondition.routes");
@@ -56,6 +60,18 @@ app.use("/api/benefit", benefitRoutes);
 
 // Subbenefit Routes
 app.use("/api/subbenefit", subbenefitRoutes);
+
+// Course Live Routes
+app.use("/api/course-live", courseLiveRoutes);
+
+// Course Video Routes
+app.use("/api/course-video", courseVideoRoutes);
+
+// Mentoring Routes
+app.use("/api/mentoring", mentoringRoutes);
+
+// Facility Routes
+app.use("/api/facility", facilityRoutes);
 
 // Review Routes
 app.use("/api/review", reviewRoutes);

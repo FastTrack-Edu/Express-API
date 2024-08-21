@@ -38,6 +38,18 @@ const courseSchema = new Schema({
       ref: "Benefit",
     },
   ],
+  course_videos: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "CourseVideo",
+    },
+  ],
+  course_lives: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "CourseLive",
+    },
+  ],
   enrolled_members: [
     {
       type: Schema.Types.ObjectId,
