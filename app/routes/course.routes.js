@@ -31,6 +31,28 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/reguler", async (req, res) => {
+  const { title } = req.query;
+
+  try {
+    const courses = await Course.find({ type: "reguler" }).filter(title);
+    res.status(201).json(courses);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+router.get("/exclusive", async (req, res) => {
+  const { title } = req.query;
+
+  try {
+    const courses = await Course.find({ type: "exclusive" }).filter(title);
+    res.status(201).json(courses);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
 router.get("/:id", async (req, res) => {
   const courseId = req.params.id;
 
@@ -43,6 +65,8 @@ router.get("/:id", async (req, res) => {
           path: "subbenefits",
         },
       })
+      .populate("course_videos")
+      .populate("course_mentorings")
       .populate("enrolled_members")
       .populate("reviews");
 

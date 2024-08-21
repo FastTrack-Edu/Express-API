@@ -1,8 +1,22 @@
 const Review = require("../models/review.models");
 
-async function calculateAverageRating(videoLessonId) {
+async function calculateAverageRating(modelId, modelType) {
   try {
-    const reviews = await Review.find({ video_lesson: videoLessonId });
+    let reviews;
+
+    switch (modelType) {
+      case "video_lesson":
+        reviews = await Review.find({ video_lesson: modelId });
+        break;
+      case "course":
+        reviews = await Review.find({ course: modelId });
+        break;
+      case "mentoring":
+        reviews = await Review.find({ mentoring: modelId });
+        break;
+      default:
+        throw new Error("Invalid entity type");
+    }
 
     const totalRating = reviews.reduce((acc, review) => acc + parseFloat(review.rating), 0);
 

@@ -25,6 +25,11 @@ const reviewSchema = new Schema({
     ref: "Course",
     default: null,
   },
+  mentoring: {
+    type: Schema.Types.ObjectId,
+    ref: "Mentoring",
+    default: null,
+  },
 });
 
 const Review = model("Review", reviewSchema);

@@ -49,6 +49,12 @@ const userSchema = new Schema({
       ref: "Course",
     },
   ],
+  enrolled_mentorings: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Mentoring",
+    },
+  ],
 });
 
 userSchema.pre("save", async function (next) {
