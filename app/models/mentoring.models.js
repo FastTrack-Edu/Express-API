@@ -21,7 +21,7 @@ const mentoringSchema = new Schema({
   },
   category: {
     type: String,
-    enum: ["reguler", "exclusive"],
+    enum: ["ppko", "lkti", "pkm", "p2mw", "essai"],
   },
   rating: {
     type: Number,
