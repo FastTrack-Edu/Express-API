@@ -66,7 +66,8 @@ router.get("/:id", async (req, res) => {
         },
       })
       .populate("course_videos")
-      .populate("course_mentorings")
+      .populate("course_moduls")
+      .populate("course_lives")
       .populate("enrolled_members")
       .populate("reviews");
 

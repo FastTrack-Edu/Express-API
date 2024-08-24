@@ -6,6 +6,7 @@ const upload = require("../middleware/upload.middleware");
 const fs = require("fs");
 const path = require("path");
 const { validateRequiredFields, findModelById } = require("../utils/validation.utils");
+const { calculateDiscountPrice } = require("../utils/calculate.utils");
 
 const router = express.Router();
 
@@ -48,9 +49,15 @@ router.post(
     const eventData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "category", "audience", "event_date", "description"]);
+      const { error: validationError } = validateRequiredFields(eventData, ["name", "organizer", "category", "audience", "event_date", "description", "price"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
+      }
+
+      // Calculate Discount Price
+      if (eventData.discount != 0) {
+        const { price, discount } = eventData;
+        eventData.discount_price = calculateDiscountPrice(price, discount);
       }
 
       // Handle Upload
@@ -86,7 +93,7 @@ router.patch(
     const eventData = req.body;
 
     try {
-      const { error: validationError } = validateRequiredFields(eventData, ["name", "registration_fee", "organizer", "category", "audience", "event_date", "description"]);
+      const { error: validationError } = validateRequiredFields(eventData, ["name", "organizer", "category", "audience", "event_date", "description", "price"]);
       if (validationError) {
         return res.status(400).json({ error: validationError });
       }
@@ -95,6 +102,11 @@ router.patch(
       const { document: eventExist, error: eventError } = await findModelById("Event", eventId);
       if (eventError) {
         return res.status(400).json({ error: eventError });
+      }
+
+      if (eventData.discount != 0) {
+        const { price, discount } = eventData;
+        eventData.discount_price = calculateDiscountPrice(price, discount);
       }
 
       // Handle Upload
@@ -149,6 +161,13 @@ router.delete("/destroy/:id", auth, admin, async (req, res) => {
     }
 
     res.status(200).json({ message: "Data deleted!" });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+router.post("/registration", auth, async (req, res) => {
+  try {
   } catch (err) {
     res.status(500).send(err.message);
   }

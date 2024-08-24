@@ -44,6 +44,12 @@ const courseSchema = new Schema({
       ref: "CourseVideo",
     },
   ],
+  course_moduls: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "CourseModul",
+    },
+  ],
   course_lives: [
     {
       type: Schema.Types.ObjectId,

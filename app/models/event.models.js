@@ -7,10 +7,6 @@ const eventSchema = new Schema({
     type: String,
     required: true,
   },
-  registration_fee: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
   organizer: {
     type: String,
     required: true,
@@ -26,6 +22,18 @@ const eventSchema = new Schema({
   description: {
     type: String,
     required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  discount: {
+    type: Number,
+    default: 0,
+  },
+  discount_price: {
+    type: Number,
+    default: null,
   },
   thumbnail: {
     type: String,
@@ -49,6 +57,12 @@ const eventSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "Timeline",
+    },
+  ],
+  registrations: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "EventRegistration",
     },
   ],
 });

@@ -77,7 +77,7 @@ videoLessonSchema.query.filter = function (title, level, category) {
   if (level) {
     query = query.where({ level });
   }
-  if (level) {
+  if (category) {
     query = query.where({ category });
   }
   return query;
