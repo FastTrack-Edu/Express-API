@@ -13,6 +13,10 @@ const storage = multer.diskStorage({
       uploadPath += "photo/";
     } else if (file.fieldname === "guide_book") {
       uploadPath += "guide_book/";
+    } else if (file.fieldname === "file") {
+      uploadPath += "file/";
+    } else if (file.fieldname === "modul") {
+      uploadPath += "modul/";
     }
 
     if (!fs.existsSync(uploadPath)) {
